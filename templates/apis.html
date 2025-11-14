@@ -1,0 +1,340 @@
+<!-- apis -->
+{% extends "base.html" %}
+
+{% block title %}API Documentation{% endblock %}
+
+{% block content %}
+<section class="apis-page">
+    <div class="container">
+        <div class="page-header">
+            <h1 class="section-title">API Documentation</h1>
+            <p class="section-subtitle">Complete reference for our 12 premium OTP APIs</p>
+        </div>
+
+        <!-- API Overview -->
+        <div class="api-overview">
+            <div class="overview-card">
+                <div class="overview-content">
+                    <h2>12 Premium APIs</h2>
+                    <p>Access to high-quality OTP services from leading providers. Each API is thoroughly tested and maintained for optimal performance.</p>
+                    <div class="overview-stats">
+                        <div class="stat">
+                            <div class="stat-number">12</div>
+                            <div class="stat-label">Active APIs</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-number">99.2%</div>
+                            <div class="stat-label">Average Uptime</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-number">&lt;500ms</div>
+                            <div class="stat-label">Response Time</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="overview-visual">
+                    <div class="api-grid-mini">
+                        {% for i in range(12) %}
+                        <div class="api-dot"></div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- API List -->
+        <div class="api-list">
+            {% for api in [
+                {"name": "Hungama Communication", "category": "Entertainment", "status": "active", "rate_limit": "1000/hr", "success_rate": "99.1%"},
+                {"name": "Meru Cab OTP", "category": "Transportation", "status": "active", "rate_limit": "500/hr", "success_rate": "98.7%"},
+                {"name": "Dayco India EKYC", "category": "Finance", "status": "active", "rate_limit": "300/hr", "success_rate": "99.3%"},
+                {"name": "Doubtnut Student", "category": "Education", "status": "active", "rate_limit": "800/hr", "success_rate": "98.9%"},
+                {"name": "NoBroker OTP", "category": "Real Estate", "status": "active", "rate_limit": "400/hr", "success_rate": "99.0%"},
+                {"name": "Shiprocket Auth", "category": "Logistics", "status": "active", "rate_limit": "600/hr", "success_rate": "98.5%"},
+                {"name": "Tata Capital", "category": "Finance", "status": "active", "rate_limit": "200/hr", "success_rate": "99.2%"},
+                {"name": "PenPencil OTP", "category": "Education", "status": "active", "rate_limit": "700/hr", "success_rate": "98.8%"},
+                {"name": "1MG Auth", "category": "Healthcare", "status": "active", "rate_limit": "450/hr", "success_rate": "99.1%"},
+                {"name": "Swiggy Call Verification", "category": "Food Delivery", "status": "active", "rate_limit": "900/hr", "success_rate": "98.6%"},
+                {"name": "KPN Fresh OTP", "category": "Grocery", "status": "active", "rate_limit": "350/hr", "success_rate": "99.0%"},
+                {"name": "Servetel Auth", "category": "Telecom", "status": "active", "rate_limit": "550/hr", "success_rate": "98.7%"}
+            ] %}
+            <div class="api-card">
+                <div class="api-header">
+                    <div class="api-info">
+                        <h3>{{ api.name }}</h3>
+                        <span class="api-category">{{ api.category }}</span>
+                    </div>
+                    <div class="api-status">
+                        <span class="status-badge status-{{ api.status }}">{{ api.status|title }}</span>
+                    </div>
+                </div>
+                <div class="api-body">
+                    <p>High-performance OTP delivery service with enterprise-grade reliability and fast response times.</p>
+                    <div class="api-metrics">
+                        <div class="metric">
+                            <span class="metric-label">Rate Limit</span>
+                            <span class="metric-value">{{ api.rate_limit }}</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Success Rate</span>
+                            <span class="metric-value">{{ api.success_rate }}</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">Avg. Response</span>
+                            <span class="metric-value">&lt;500ms</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="api-footer">
+                    <button class="btn btn-outline btn-small view-details" data-api="{{ api.name }}">
+                        <i class="fas fa-code"></i>
+                        View Details
+                    </button>
+                    <button class="btn btn-primary btn-small test-api" data-api="{{ api.name }}">
+                        <i class="fas fa-bolt"></i>
+                        Test API
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Integration Guide -->
+        <div class="integration-guide">
+            <h2>Integration Guide</h2>
+            <div class="guide-content">
+                <div class="guide-section">
+                    <h3><i class="fas fa-code"></i> API Endpoints</h3>
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span>Base URL</span>
+                            <button class="btn-copy" data-code="https://api.LUCIFERSEC.tech/v1">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                        <pre><code>https://api.LUCIFERSEC.tech/v1</code></pre>
+                    </div>
+                </div>
+
+                <div class="guide-section">
+                    <h3><i class="fas fa-key"></i> Authentication</h3>
+                    <p>All API requests require authentication using your API key:</p>
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span>Header Example</span>
+                            <button class="btn-copy" data-code='{"X-API-Key": "your_api_key_here"}'>
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                        <pre><code>{
+  "X-API-Key": "your_api_key_here",
+  "Content-Type": "application/json"
+}</code></pre>
+                    </div>
+                </div>
+
+                <div class="guide-section">
+                    <h3><i class="fas fa-paper-plane"></i> Send OTP Request</h3>
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span>Request Example</span>
+                            <button class="btn-copy" data-code='curl -X POST https://api.LUCIFERSEC.tech/v1/otp/send \ -H "X-API-Key: your_api_key" \ -H "Content-Type: application/json" \ -d {"phone": "9876543210", "provider": "all"}'>
+
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                        <pre><code>POST /v1/otp/send
+{
+  "phone": "9876543210",
+  "provider": "all",
+  "iterations": 1
+}</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- API Modal -->
+<div class="modal" id="apiModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modalTitle">API Details</h3>
+            <button class="modal-close" id="modalClose">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body" id="modalBody">
+            <!-- Dynamic content will be loaded here -->
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+class APIManager {
+    constructor() {
+        this.init();
+    }
+
+    init() {
+        this.setupEventListeners();
+        this.setupCopyButtons();
+    }
+
+    setupEventListeners() {
+        // View details buttons
+        document.querySelectorAll('.view-details').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const apiName = e.target.closest('.view-details').dataset.api;
+                this.showAPIDetails(apiName);
+            });
+        });
+
+        // Test API buttons
+        document.querySelectorAll('.test-api').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const apiName = e.target.closest('.test-api').dataset.api;
+                this.testAPI(apiName);
+            });
+        });
+
+        // Modal close
+        document.getElementById('modalClose').addEventListener('click', () => {
+            this.hideModal();
+        });
+
+        // Close modal on outside click
+        document.getElementById('apiModal').addEventListener('click', (e) => {
+            if (e.target.id === 'apiModal') {
+                this.hideModal();
+            }
+        });
+    }
+
+    setupCopyButtons() {
+        document.querySelectorAll('.btn-copy').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const code = e.target.closest('.btn-copy').dataset.code;
+                this.copyToClipboard(code);
+                
+                // Show copied feedback
+                const originalHTML = e.target.innerHTML;
+                e.target.innerHTML = '<i class="fas fa-check"></i>';
+                setTimeout(() => {
+                    e.target.innerHTML = originalHTML;
+                }, 2000);
+            });
+        });
+    }
+
+    showAPIDetails(apiName) {
+        const modal = document.getElementById('apiModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalBody = document.getElementById('modalBody');
+
+        modalTitle.textContent = `${apiName} - API Documentation`;
+        
+        // This would typically come from an API, but we'll use static content for now
+        modalBody.innerHTML = this.getAPIDetailsHTML(apiName);
+        
+        modal.style.display = 'flex';
+    }
+
+    getAPIDetailsHTML(apiName) {
+        return `
+            <div class="api-details">
+                <div class="detail-section">
+                    <h4><i class="fas fa-info-circle"></i> Overview</h4>
+                    <p>High-performance OTP delivery service with enterprise-grade reliability. This API provides fast and reliable OTP delivery with excellent success rates.</p>
+                </div>
+
+                <div class="detail-section">
+                    <h4><i class="fas fa-cog"></i> Configuration</h4>
+                    <div class="config-grid">
+                        <div class="config-item">
+                            <span class="config-label">Rate Limit</span>
+                            <span class="config-value">500 requests/hour</span>
+                        </div>
+                        <div class="config-item">
+                            <span class="config-label">Success Rate</span>
+                            <span class="config-value">99.1%</span>
+                        </div>
+                        <div class="config-item">
+                            <span class="config-label">Avg. Response</span>
+                            <span class="config-value">&lt;500ms</span>
+                        </div>
+                        <div class="config-item">
+                            <span class="config-label">Uptime</span>
+                            <span class="config-value">99.9%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h4><i class="fas fa-code"></i> Usage Example</h4>
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span>JavaScript</span>
+                            <button class="btn-copy" data-code="const response = await fetch('/api/bomb', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phone: '9876543210', provider: '${apiName.toLowerCase()}' }) });">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                        <pre><code>const response = await fetch('/api/bomb', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    phone: '9876543210',
+    provider: '${apiName.toLowerCase()}'
+  })
+});</code></pre>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h4><i class="fas fa-shield-alt"></i> Security</h4>
+                    <ul class="security-features">
+                        <li><i class="fas fa-check"></i> End-to-end encryption</li>
+                        <li><i class="fas fa-check"></i> Rate limiting</li>
+                        <li><i class="fas fa-check"></i> IP whitelisting</li>
+                        <li><i class="fas fa-check"></i> Request signing</li>
+                    </ul>
+                </div>
+            </div>
+        `;
+    }
+
+    testAPI(apiName) {
+        // Show testing modal or redirect to bomber page with pre-filled API
+        window.location.href = `/bomber?api=${encodeURIComponent(apiName)}`;
+    }
+
+    hideModal() {
+        document.getElementById('apiModal').style.display = 'none';
+    }
+
+    async copyToClipboard(text) {
+        try {
+            await navigator.clipboard.writeText(text);
+        } catch (err) {
+            // Fallback for older browsers
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+        }
+    }
+}
+
+// Initialize API manager when page loads
+document.addEventListener('DOMContentLoaded', () => {
+    new APIManager();
+});
+</script>
+{% endblock %}

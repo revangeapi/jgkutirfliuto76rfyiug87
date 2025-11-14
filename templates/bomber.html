@@ -1,0 +1,596 @@
+{% extends "base.html" %}
+
+{% block title %}OTP Bomber - Advanced Testing{% endblock %}
+
+{% block content %}
+<section class="bomber-section">
+    <div class="container">
+        <div class="bomber-header">
+            <h1 class="section-title">Advanced OTP Bombing Platform</h1>
+            <p class="section-subtitle">Test your systems with our comprehensive OTP testing solution</p>
+        </div>
+
+        <div class="bomber-grid">
+            <!-- Control Panel -->
+            <div class="control-panel">
+                <div class="panel-header">
+                    <h3><i class="fas fa-cogs"></i> Control Panel</h3>
+                    <div class="status-indicator">
+                        <span class="status-dot" id="statusDot"></span>
+                        <span id="statusText">Ready</span>
+                    </div>
+                </div>
+                
+                <form id="bombForm" class="bomb-form">
+                    <div class="form-group">
+                        <label for="phoneNumber">
+                            <i class="fas fa-phone"></i>
+                            Phone Number
+                        </label>
+                        <input type="text" id="phoneNumber" name="phone" 
+                               placeholder="Enter 10-digit phone number" 
+                               maxlength="10" pattern="[0-9]{10}" required>
+                        <div class="form-hint">10 digits without country code</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ipAddress">
+                            <i class="fas fa-globe"></i>
+                            IP Address
+                        </label>
+                        <input type="text" id="ipAddress" name="ip" 
+                               placeholder="192.168.1.1" 
+                               value="192.168.1.1" pattern="^([0-9]{1,3}\.){3}[0-9]{1,3}$">
+                        <div class="form-hint">Optional - Default IP will be used</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="iterations">
+                            <i class="fas fa-redo"></i>
+                            Iterations (1-5)
+                        </label>
+                        <input type="number" id="iterations" name="iterations" 
+                               min="1" max="5" value="1">
+                        <div class="form-hint">Number of bombing cycles</div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary btn-large" id="submitBtn">
+                            <i class="fas fa-rocket"></i>
+                            Launch OTP Bombing
+                        </button>
+                        <button type="button" class="btn btn-secondary btn-large" id="stopBtn" disabled>
+                            <i class="fas fa-stop"></i>
+                            Stop Bombing
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Quick Stats -->
+                <div class="quick-stats">
+                    <div class="stat-card">
+                        <div class="stat-icon success">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="currentSuccess">0</span>
+                            <span class="stat-label">Successful</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon failed">
+                            <i class="fas fa-times-circle"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="currentFailed">0</span>
+                            <span class="stat-label">Failed</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon total">
+                            <i class="fas fa-bullseye"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="currentTotal">0</span>
+                            <span class="stat-label">Total Requests</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Live Logs -->
+            <div class="logs-panel">
+                <div class="panel-header">
+                    <h3><i class="fas fa-terminal"></i> Live Logs</h3>
+                    <div class="log-actions">
+                        <button id="clearLogs" class="btn btn-secondary btn-small">
+                            <i class="fas fa-trash"></i>
+                            Clear
+                        </button>
+                        <button id="exportLogs" class="btn btn-secondary btn-small">
+                            <i class="fas fa-download"></i>
+                            Export
+                        </button>
+                    </div>
+                </div>
+                <div class="logs-container">
+                    <div id="logsContent" class="logs-content">
+                        <div class="log-entry log-info">
+                            <span class="log-time" id="initialLogTime"></span>
+                            <span class="log-message">🚀 System initialized. Ready to launch OTP bombing session...</span>
+                        </div>
+                        <div class="log-entry log-info">
+                            <span class="log-time" id="initialLogTime2"></span>
+                            <span class="log-message">📡 12 premium APIs loaded and ready</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Section -->
+        <div class="progress-section" id="progressSection" style="display: none;">
+            <div class="progress-header">
+                <h4><i class="fas fa-tachometer-alt"></i> Bombing Progress</h4>
+                <span id="progressText">0%</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+            </div>
+            <div class="progress-stats">
+                <div class="progress-stat">
+                    <span>Estimated Time:</span>
+                    <span id="eta">Calculating...</span>
+                </div>
+                <div class="progress-stat">
+                    <span>Current Iteration:</span>
+                    <span id="currentIteration">0/0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/bomber.js') }}"></script>
+<script>
+// Set initial log times with current time
+document.addEventListener('DOMContentLoaded', function() {
+    const currentTime = new Date().toLocaleTimeString();
+    document.querySelectorAll('#initialLogTime, #initialLogTime2').forEach(el => {
+        el.textContent = `[${currentTime}]`;
+    });
+});
+
+class OTPBomber {
+    constructor() {
+        this.isRunning = false;
+        this.currentSession = null;
+        this.sessionInterval = null;
+        this.init();
+    }
+
+    init() {
+        this.setupEventListeners();
+        this.updateStatus('ready');
+    }
+
+    setupEventListeners() {
+        const bombForm = document.getElementById('bombForm');
+        const clearLogsBtn = document.getElementById('clearLogs');
+        const exportLogsBtn = document.getElementById('exportLogs');
+        const stopBtn = document.getElementById('stopBtn');
+
+        if (bombForm) {
+            bombForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.startBombing();
+            });
+        }
+
+        if (clearLogsBtn) {
+            clearLogsBtn.addEventListener('click', () => {
+                this.clearLogs();
+            });
+        }
+
+        if (exportLogsBtn) {
+            exportLogsBtn.addEventListener('click', () => {
+                this.exportLogs();
+            });
+        }
+
+        if (stopBtn) {
+            stopBtn.addEventListener('click', () => {
+                this.stopBombing();
+            });
+        }
+
+        // Phone number validation
+        const phoneInput = document.getElementById('phoneNumber');
+        if (phoneInput) {
+            phoneInput.addEventListener('input', (e) => {
+                e.target.value = e.target.value.replace(/\D/g, '').slice(0, 10);
+            });
+        }
+
+        // IP address validation
+        const ipInput = document.getElementById('ipAddress');
+        if (ipInput) {
+            ipInput.addEventListener('input', (e) => {
+                // Basic IP validation
+                const value = e.target.value;
+                if (!/^(\d{1,3}\.){0,3}\d{0,3}$/.test(value)) {
+                    e.target.value = value.slice(0, -1);
+                }
+            });
+        }
+    }
+
+    async startBombing() {
+        if (this.isRunning) {
+            this.showNotification('Bombing is already in progress', 'warning');
+            return;
+        }
+
+        const formData = new FormData(document.getElementById('bombForm'));
+        const data = {
+            phone: formData.get('phone'),
+            ip: formData.get('ip') || '192.168.1.1',
+            iterations: parseInt(formData.get('iterations')) || 1
+        };
+
+        // Validate phone number
+        if (!/^\d{10}$/.test(data.phone)) {
+            this.showNotification('Please enter a valid 10-digit phone number', 'error');
+            return;
+        }
+
+        // Validate iterations
+        if (data.iterations < 1 || data.iterations > 5) {
+            this.showNotification('Iterations must be between 1 and 5', 'error');
+            return;
+        }
+
+        this.isRunning = true;
+        this.updateStatus('running');
+        this.showProgress();
+        this.addLog('🚀 Starting OTP bombing session...', 'info');
+        this.addLog(`📱 Target: ${data.phone}`, 'info');
+        this.addLog(`🌐 IP: ${data.ip}`, 'info');
+        this.addLog(`🔄 Iterations: ${data.iterations}`, 'info');
+
+        const submitBtn = document.getElementById('submitBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const originalSubmitText = submitBtn.innerHTML;
+
+        submitBtn.disabled = true;
+        stopBtn.disabled = false;
+
+        try {
+            const response = await this.apiCall('/api/bomb', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (response.success) {
+                this.currentSession = response.session_id;
+                this.addLog('✅ Bombing session started successfully', 'success');
+                this.startSessionMonitoring();
+            } else {
+                throw new Error(response.error || 'Failed to start bombing session');
+            }
+        } catch (error) {
+            this.addLog(`❌ Failed to start bombing: ${error.message}`, 'error');
+            this.stopBombing();
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalSubmitText;
+        }
+    }
+
+    async apiCall(endpoint, options = {}) {
+        try {
+            const response = await fetch(endpoint, options);
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'API request failed');
+            }
+
+            return data;
+        } catch (error) {
+            console.error('API call failed:', error);
+            this.showNotification(error.message, 'error');
+            throw error;
+        }
+    }
+
+    async startSessionMonitoring() {
+        if (!this.currentSession) return;
+
+        this.sessionInterval = setInterval(async () => {
+            try {
+                const session = await this.apiCall(`/api/session/${this.currentSession}`);
+                this.updateSessionData(session);
+
+                if (session.status === 'completed' || session.status === 'failed') {
+                    this.stopBombing();
+                    this.addLog(
+                        session.status === 'completed' 
+                            ? '🎉 Bombing session completed successfully!' 
+                            : '❌ Bombing session failed!',
+                        session.status === 'completed' ? 'success' : 'error'
+                    );
+                }
+            } catch (error) {
+                console.error('Error monitoring session:', error);
+            }
+        }, 1000);
+    }
+
+    updateSessionData(session) {
+        // Update stats
+        document.getElementById('currentSuccess').textContent = session.results.successful || 0;
+        document.getElementById('currentFailed').textContent = session.results.failed || 0;
+        document.getElementById('currentTotal').textContent = session.results.total || 0;
+
+        // Update progress
+        this.updateProgress(session);
+
+        // Update logs (only new ones)
+        this.updateLogs(session.logs);
+    }
+
+    updateProgress(session) {
+        const progressSection = document.getElementById('progressSection');
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+        const currentIteration = document.getElementById('currentIteration');
+        const eta = document.getElementById('eta');
+
+        if (session.results.total > 0) {
+            const progress = (session.results.successful / session.results.total) * 100;
+            progressFill.style.width = `${progress}%`;
+            progressText.textContent = `${Math.round(progress)}%`;
+        }
+
+        // Update iteration info
+        currentIteration.textContent = `1/1`; // This would need to be calculated based on actual progress
+
+        // Update ETA
+        eta.textContent = 'Calculating...';
+    }
+
+    updateLogs(logs) {
+        const logsContent = document.getElementById('logsContent');
+        const currentLogs = Array.from(logsContent.querySelectorAll('.log-entry'))
+            .map(log => log.querySelector('.log-message').textContent);
+
+        // Add only new logs
+        logs.forEach(log => {
+            const logMessage = log.split('] ')[1];
+            if (!currentLogs.includes(logMessage)) {
+                this.addLog(logMessage, 'info');
+            }
+        });
+    }
+
+    stopBombing() {
+        this.isRunning = false;
+        this.updateStatus('ready');
+        this.hideProgress();
+
+        if (this.sessionInterval) {
+            clearInterval(this.sessionInterval);
+            this.sessionInterval = null;
+        }
+
+        const submitBtn = document.getElementById('submitBtn');
+        const stopBtn = document.getElementById('stopBtn');
+
+        if (submitBtn) submitBtn.disabled = false;
+        if (stopBtn) stopBtn.disabled = true;
+
+        this.addLog('🛑 Bombing session stopped', 'warning');
+    }
+
+    addLog(message, type = 'info') {
+        const logsContent = document.getElementById('logsContent');
+        const timestamp = new Date().toLocaleTimeString();
+        
+        const logEntry = document.createElement('div');
+        logEntry.className = `log-entry log-${type}`;
+        logEntry.innerHTML = `
+            <span class="log-time">[${timestamp}]</span>
+            <span class="log-message">${message}</span>
+        `;
+
+        logsContent.appendChild(logEntry);
+        logsContent.scrollTop = logsContent.scrollHeight;
+
+        // Limit logs to 1000 entries to prevent memory issues
+        const logs = logsContent.querySelectorAll('.log-entry');
+        if (logs.length > 1000) {
+            logs[0].remove();
+        }
+    }
+
+    clearLogs() {
+        const logsContent = document.getElementById('logsContent');
+        const currentTime = new Date().toLocaleTimeString();
+        
+        logsContent.innerHTML = `
+            <div class="log-entry log-info">
+                <span class="log-time">[${currentTime}]</span>
+                <span class="log-message">🧹 Logs cleared</span>
+            </div>
+        `;
+    }
+
+    exportLogs() {
+        const logsContent = document.getElementById('logsContent');
+        const logs = Array.from(logsContent.querySelectorAll('.log-entry'))
+            .map(log => log.textContent)
+            .join('\n');
+
+        const blob = new Blob([logs], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `LUCIFERSEC-logs-${new Date().toISOString().split('T')[0]}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        this.addLog('📥 Logs exported successfully', 'success');
+    }
+
+    updateStatus(status) {
+        const statusDot = document.getElementById('statusDot');
+        const statusText = document.getElementById('statusText');
+
+        if (statusDot && statusText) {
+            statusDot.className = 'status-dot';
+            statusDot.classList.add(status);
+            
+            const statusMessages = {
+                'ready': 'Ready',
+                'running': 'Running',
+                'error': 'Error'
+            };
+            
+            statusText.textContent = statusMessages[status] || 'Unknown';
+        }
+    }
+
+    showProgress() {
+        const progressSection = document.getElementById('progressSection');
+        if (progressSection) {
+            progressSection.style.display = 'block';
+        }
+    }
+
+    hideProgress() {
+        const progressSection = document.getElementById('progressSection');
+        if (progressSection) {
+            progressSection.style.display = 'none';
+        }
+    }
+
+    showNotification(message, type = 'info') {
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.innerHTML = `
+            <div class="notification-content">
+                <i class="fas fa-${this.getNotificationIcon(type)}"></i>
+                <span>${message}</span>
+            </div>
+            <button class="notification-close">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+
+        // Add styles if not already added
+        if (!document.querySelector('#notification-styles')) {
+            const styles = document.createElement('style');
+            styles.id = 'notification-styles';
+            styles.textContent = `
+                .notification {
+                    position: fixed;
+                    top: 100px;
+                    right: 20px;
+                    background: var(--darker);
+                    border: 1px solid var(--border);
+                    border-left: 4px solid var(--primary);
+                    border-radius: var(--radius);
+                    padding: 1rem;
+                    max-width: 400px;
+                    box-shadow: var(--shadow-lg);
+                    z-index: 10000;
+                    transform: translateX(400px);
+                    transition: transform 0.3s ease;
+                }
+                .notification.show {
+                    transform: translateX(0);
+                }
+                .notification-success {
+                    border-left-color: var(--success);
+                }
+                .notification-error {
+                    border-left-color: var(--danger);
+                }
+                .notification-warning {
+                    border-left-color: var(--warning);
+                }
+                .notification-content {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.75rem;
+                    color: var(--light);
+                }
+                .notification-close {
+                    background: none;
+                    border: none;
+                    color: var(--gray);
+                    cursor: pointer;
+                    padding: 0.25rem;
+                    position: absolute;
+                    top: 0.5rem;
+                    right: 0.5rem;
+                }
+                .notification-close:hover {
+                    color: var(--light);
+                }
+            `;
+            document.head.appendChild(styles);
+        }
+
+        document.body.appendChild(notification);
+
+        // Animate in
+        setTimeout(() => notification.classList.add('show'), 100);
+
+        // Auto remove after 5 seconds
+        setTimeout(() => {
+            this.removeNotification(notification);
+        }, 5000);
+
+        // Close on click
+        notification.querySelector('.notification-close').addEventListener('click', () => {
+            this.removeNotification(notification);
+        });
+    }
+
+    removeNotification(notification) {
+        notification.classList.remove('show');
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 300);
+    }
+
+    getNotificationIcon(type) {
+        const icons = {
+            'success': 'check-circle',
+            'error': 'exclamation-circle',
+            'warning': 'exclamation-triangle',
+            'info': 'info-circle'
+        };
+        return icons[type] || 'info-circle';
+    }
+}
+
+// Initialize bomber when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    window.otpBomber = new OTPBomber();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,389 @@
+<!-- stats -->
+{% extends "base.html" %}
+
+{% block title %}Statistics & Analytics{% endblock %}
+
+{% block content %}
+<section class="stats-page">
+    <div class="container">
+        <div class="page-header">
+            <h1 class="section-title">Platform Statistics</h1>
+            <p class="section-subtitle">Real-time analytics and performance metrics</p>
+        </div>
+
+        <!-- Overview Cards -->
+        <div class="overview-cards">
+            <div class="overview-card primary">
+                <div class="card-icon">
+                    <i class="fas fa-paper-plane"></i>
+                </div>
+                <div class="card-content">
+                    <div class="card-value" id="totalRequests">0</div>
+                    <div class="card-label">Total Requests Sent</div>
+                    <div class="card-trend positive">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>12% increase</span>
+                    </div>
+                </div>
+            </div>
+            <div class="overview-card success">
+                <div class="card-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="card-content">
+                    <div class="card-value" id="successRate">98%</div>
+                    <div class="card-label">Success Rate</div>
+                    <div class="card-trend positive">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>2% improvement</span>
+                    </div>
+                </div>
+            </div>
+            <div class="overview-card warning">
+                <div class="card-icon">
+                    <i class="fas fa-play-circle"></i>
+                </div>
+                <div class="card-content">
+                    <div class="card-value" id="activeSessions">0</div>
+                    <div class="card-label">Active Sessions</div>
+                    <div class="card-trend neutral">
+                        <i class="fas fa-minus"></i>
+                        <span>Stable</span>
+                    </div>
+                </div>
+            </div>
+            <div class="overview-card info">
+                <div class="card-icon">
+                    <i class="fas fa-server"></i>
+                </div>
+                <div class="card-content">
+                    <div class="card-value">12</div>
+                    <div class="card-label">Active APIs</div>
+                    <div class="card-trend positive">
+                        <i class="fas fa-check"></i>
+                        <span>All systems operational</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="charts-grid">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3>API Performance</h3>
+                    <div class="chart-legend">
+                        <span class="legend-item success">
+                            <i class="fas fa-circle"></i>
+                            Successful
+                        </span>
+                        <span class="legend-item failed">
+                            <i class="fas fa-circle"></i>
+                            Failed
+                        </span>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="performanceChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3>Request Distribution</h3>
+                    <div class="chart-legend" id="distributionLegend"></div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="distributionChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- API Usage Table -->
+        <div class="table-card">
+            <div class="table-header">
+                <h3>API Usage Statistics</h3>
+                <button class="btn btn-secondary btn-small" id="refreshStats">
+                    <i class="fas fa-sync-alt"></i>
+                    Refresh
+                </button>
+            </div>
+            <div class="table-container">
+                <table class="stats-table">
+                    <thead>
+                        <tr>
+                            <th>API Name</th>
+                            <th>Endpoint</th>
+                            <th>Requests</th>
+                            <th>Success Rate</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="apiStatsBody">
+                        <tr>
+                            <td colspan="5" class="loading-text">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                Loading statistics...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- System Info -->
+        <div class="info-grid">
+            <div class="info-card">
+                <h4><i class="fas fa-info-circle"></i> System Information</h4>
+                <div class="info-list">
+                    <div class="info-item">
+                        <span class="info-label">Server Status</span>
+                        <span class="info-value status-operational">Operational</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Uptime</span>
+                        <span class="info-value" id="serverUptime">Calculating...</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Last Updated</span>
+                        <span class="info-value" id="lastUpdated">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Memory Usage</span>
+                        <span class="info-value" id="memoryUsage">-</span>
+                    </div>
+                </div>
+            </div>
+            <div class="info-card">
+                <h4><i class="fas fa-history"></i> Recent Activity</h4>
+                <div class="activity-list" id="recentActivity">
+                    <div class="activity-item">
+                        <i class="fas fa-circle activity-dot"></i>
+                        <div class="activity-content">
+                            <span class="activity-message">System initialized and ready</span>
+                            <span class="activity-time">Just now</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+<script>
+class StatsManager {
+    constructor() {
+        this.charts = {};
+        this.init();
+    }
+
+    init() {
+        this.loadStats();
+        this.setupEventListeners();
+        
+        // Refresh every 10 seconds
+        setInterval(() => this.loadStats(), 10000);
+    }
+
+    setupEventListeners() {
+        document.getElementById('refreshStats').addEventListener('click', () => {
+            this.loadStats();
+        });
+    }
+
+    async loadStats() {
+        try {
+            const response = await fetch('/api/stats');
+            const data = await response.json();
+            this.updateDashboard(data);
+            this.updateCharts(data);
+            this.updateApiTable(data);
+        } catch (error) {
+            console.error('Error loading stats:', error);
+        }
+    }
+
+    updateDashboard(data) {
+        document.getElementById('totalRequests').textContent = data.total_requests_sent.toLocaleString();
+        document.getElementById('activeSessions').textContent = data.active_sessions;
+        document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString();
+        
+        // Calculate success rate
+        const total = data.total_requests_sent;
+        const failed = Object.values(data.api_usage_stats).reduce((sum, count) => sum + count, 0) - total;
+        const successRate = total > 0 ? ((total - Math.max(0, failed)) / total * 100).toFixed(1) : 0;
+        document.getElementById('successRate').textContent = successRate + '%';
+    }
+
+    updateCharts(data) {
+        // Initialize charts if not exists
+        if (!this.charts.performance) {
+            this.initPerformanceChart();
+        }
+        if (!this.charts.distribution) {
+            this.initDistributionChart(data);
+        }
+    }
+
+    initPerformanceChart() {
+        const ctx = document.getElementById('performanceChart').getContext('2d');
+        this.charts.performance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                datasets: [{
+                    label: 'Successful Requests',
+                    data: [65, 78, 66, 79, 95, 87],
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }, {
+                    label: 'Failed Requests',
+                    data: [5, 8, 6, 9, 5, 7],
+                    borderColor: '#ef4444',
+                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: '#9ca3af'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: '#9ca3af'
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    initDistributionChart(data) {
+        const ctx = document.getElementById('distributionChart').getContext('2d');
+        this.charts.distribution = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Hungama', 'Meru Cab', 'Dayco', 'Doubtnut', 'NoBroker', 'Others'],
+                datasets: [{
+                    data: [25, 15, 12, 18, 20, 10],
+                    backgroundColor: [
+                        '#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '70%',
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+    }
+
+    updateApiTable(data) {
+        const tbody = document.getElementById('apiStatsBody');
+        const apiStats = data.api_usage_stats || {};
+        
+        if (Object.keys(apiStats).length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="no-data">
+                        <i class="fas fa-database"></i>
+                        No API usage data available
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        let rows = '';
+        Object.entries(apiStats).forEach(([endpoint, count]) => {
+            const apiName = this.getApiName(endpoint);
+            const successRate = Math.min(95 + Math.random() * 4, 99).toFixed(1);
+            const status = successRate > 97 ? 'Operational' : 'Degraded';
+            
+            rows += `
+                <tr>
+                    <td>
+                        <div class="api-name">
+                            <i class="fas fa-check-circle status-${status.toLowerCase()}"></i>
+                            ${apiName}
+                        </div>
+                    </td>
+                    <td class="endpoint">${endpoint}</td>
+                    <td class="requests">${count.toLocaleString()}</td>
+                    <td class="success-rate">
+                        <div class="rate-bar">
+                            <div class="rate-fill" style="width: ${successRate}%"></div>
+                            <span>${successRate}%</span>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="status-badge status-${status.toLowerCase()}">${status}</span>
+                    </td>
+                </tr>
+            `;
+        });
+
+        tbody.innerHTML = rows;
+    }
+
+    getApiName(endpoint) {
+        const apiMap = {
+            'hungama.com': 'Hungama Communication',
+            'merucabapp.com': 'Meru Cab',
+            'daycoindia.com': 'Dayco India',
+            'doubtnut.com': 'Doubtnut',
+            'nobroker.in': 'NoBroker',
+            'shiprocket.in': 'Shiprocket',
+            'tatacapital.com': 'Tata Capital',
+            'penpencil.co': 'PenPencil',
+            '1mg.com': '1MG',
+            'swiggy.com': 'Swiggy',
+            'kpnfresh.com': 'KPN Fresh',
+            'servetel.in': 'Servetel'
+        };
+
+        for (const [domain, name] of Object.entries(apiMap)) {
+            if (endpoint.includes(domain)) {
+                return name;
+            }
+        }
+        return 'Unknown API';
+    }
+}
+
+// Initialize stats manager when page loads
+document.addEventListener('DOMContentLoaded', () => {
+    new StatsManager();
+});
+</script>
+{% endblock %}

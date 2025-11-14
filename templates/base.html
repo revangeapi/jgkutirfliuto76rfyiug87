@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LUCIFERSEC {% block title %}Advanced OTP Solutions{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/animations.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <i class="fas fa-bolt"></i>
+                <span>LUCIFERSEC</span>
+            </div>
+            <div class="nav-menu" id="navMenu">
+                <a href="/" class="nav-link">Home</a>
+                <a href="/bomber" class="nav-link">OTP Bomber</a>
+                <a href="/stats" class="nav-link">Statistics</a>
+                <a href="/apis" class="nav-link">APIs</a>
+            </div>
+            <div class="nav-toggle" id="navToggle">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3><i class="fas fa-bolt"></i> LUCIFERSEC</h3>
+                <p>Advanced OTP Testing & Security Solutions</p>
+                <div class="social-links">
+                    <a href="#" class="social-link"><i class="fab fa-github"></i></a>
+                    <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="social-link"><i class="fab fa-linkedin"></i></a>
+                </div>
+            </div>
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <a href="/">Home</a>
+                <a href="/bomber">OTP Bomber</a>
+                <a href="/stats">Statistics</a>
+                <a href="/apis">API Documentation</a>
+            </div>
+            <div class="footer-section">
+                <h4>Resources</h4>
+                <a href="#">Documentation</a>
+                <a href="#">API Reference</a>
+                <a href="#">Support</a>
+                <a href="#">Privacy Policy</a>
+            </div>
+            <div class="footer-section">
+                <h4>Contact Info</h4>
+                <p><i class="fas fa-envelope"></i>revangeapi@gmail.com</p>
+                <p><i class="fas fa-phone"></i>+977 970-2002912</p>
+                <p><i class="fas fa-map-marker-alt"></i>Developer:- t.me/LuciferSec</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 LUCIFERSEC. All rights reserved. | Built with <i class="fas fa-heart"></i> for developers</p>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>
